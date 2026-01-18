@@ -1,16 +1,26 @@
+import time
+
 from aiogram.types import Message
+from sqlalchemy import delete, select
+
+from db.base import Session
+from db.plan_orm import PlanORM
 
 
 async def delete_plan_handler(message: Message) -> None:
-    """
-    Handler will forward receive a message back to the sender
+    async with Session() as session:
+        plan_id = message.text[len("/delete_plan") + 1:]
+        if not plan_id.isdigit():
+            await message.answer("Failed! Please, write numbers!")
+            return
+        plan_id = int(plan_id)
+        appropriate_request = select(PlanORM).where(PlanORM.id == plan_id)
+        result = await session.scalar(appropriate_request)
+        if not result:
+            await message.answer(f"Plan with {plan_id} doesn`t exist! Try again!")
+            return
+        stm = delete(PlanORM).where(PlanORM.id == int(message.text[len("/delete_task") + 1:]))
+        await session.execute(stm)
+        await session.commit()
 
-    By default, message handler will handle all message types (like a text, photo, sticker etc.)
-    """
-    try:
-        # Send a copy of the received message
-        print(message)
-        await message.send_copy(chat_id=message.chat.id)
-    except TypeError:
-        # But not all the types is supported to be copied so need to handle it
-        await message.answer("Nice try!")
+    await message.answer("Plan successfully deleted!")

@@ -11,6 +11,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 
 from env import TOKEN, FILE_DB
+from handlers.get_status_handler import get_status_handler
 from handlers.plan_handlers.create_plan_handler import create_plan_handler
 from handlers.plan_handlers.delete_plan_handler import delete_plan_handler
 from handlers.plan_handlers.update_plan_handler import update_plan_handler
@@ -62,6 +63,10 @@ async def delete_plan(message: Message):
 @dp.message(F.text.startswith("/update_plan"))
 async def update_plan(message: Message):
     return await update_plan_handler(message)
+
+@dp.message(F.text.startswith("/get_status"))
+async def get_status(message: Message):
+    return await get_status_handler(message)
 
 
 async def main() -> None:
